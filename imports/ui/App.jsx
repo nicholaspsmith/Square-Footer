@@ -58,7 +58,6 @@ class App extends Component {
 
   getInitialRate() {
     const costs = Costs.find().fetch();
-    console.log(costs);
     if (costs.length > 0) {
       return costs[0].cost;
     }
