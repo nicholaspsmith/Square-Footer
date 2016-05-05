@@ -3,18 +3,11 @@ import ReactDOM from 'react-dom';
 import { createContainer } from 'meteor/react-meteor-data';
 
 import { Tasks } from '../api/tasks.js';
+import { Costs } from '../api/costs.js';
 
 import Task from './Task.jsx';
 
 class App extends Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      pricePer: 0.75
-    }
-  }
 
   addTask(event) {
     event.preventDefault();
@@ -48,14 +41,27 @@ class App extends Component {
 
   totalCost() {
     let total = this.totalSqFt();//not most efficient way
-    return (total * this.state.pricePer).toFixed(2);
+    if (this.props.costs[0]){
+      return (total * +this.props.costs[0].cost).toFixed(2);
+    }
+    return 0;
   }
 
   updateRate(e) {
     e.preventDefault();
-    this.setState({
-      pricePer: +ReactDOM.findDOMNode(this.refs.costPerSqFt).value.trim()
+    const costs = Costs.find().fetch();
+    const newRate = +ReactDOM.findDOMNode(this.refs.costPerSqFt).value.trim();
+    Costs.update({ _id: costs[0]._id }, {
+      $set: { cost: newRate }
     });
+  }
+
+  getInitialRate() {
+    const costs = Costs.find().fetch();
+    console.log(costs);
+    if (costs.length > 0) {
+      return costs[0].cost;
+    }
   }
 
   renderTasks() {
@@ -75,7 +81,7 @@ class App extends Component {
 
         <form className="pricePer clearfix" onSubmit={this.updateRate.bind(this)}>
           <div>Price per sq/ft</div>
-          <input type="number" ref="costPerSqFt" defaultValue="0.75" />
+          <input type="number" step="0.01" ref="costPerSqFt" placeholder={this.getInitialRate()} />
           <input type="submit" value="Calculate" />
         </form>
 
@@ -85,8 +91,8 @@ class App extends Component {
         <div className="total area clearfix">Total Area: {this.totalSqFt()} sq/ft</div>
 
         <form className="clearfix" onSubmit={this.addTask.bind(this)}>
-          <input type="number" ref="widthInput" placeholder="width (in)"/>x
-          <input type="number" ref="lengthInput" placeholder="length (in)"/>
+          <input type="number" step="0.1" ref="widthInput" placeholder="width (in)"/>x
+          <input type="number" step="0.1" ref="lengthInput" placeholder="length (in)"/>
           <input className="add" type="submit" value="+" />
         </form>
 
@@ -102,6 +108,7 @@ App.propTypes = {
 
 export default createContainer(() => {
   return {
-    tasks: Tasks.find({}).fetch(),
+    tasks: Tasks.find().fetch(),
+    costs: Costs.find().fetch(),
   };
 }, App);

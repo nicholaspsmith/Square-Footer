@@ -137,6 +137,7 @@ header .hide-completed {
 }
 input[type="submit"].add {
   background: #44cc84;
+  font-weight: bold;
   color: #fff;
 }
 input[type="number"] {
