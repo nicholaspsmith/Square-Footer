@@ -87,6 +87,7 @@ ul {
   font-size: 20px;
   border: none;
   position: relative;
+  margin-top: -6px;
 }
 
 li {
